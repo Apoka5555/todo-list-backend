@@ -22,7 +22,7 @@ export class UsersService {
     return user;
   }
 
-  async getUserById(id: any): Promise<UserDocument> {
+  async getUserById(id: string): Promise<UserDocument> {
     const user = this.userModel.findById(id);
     return user;
   }

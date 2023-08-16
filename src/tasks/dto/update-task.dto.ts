@@ -1,5 +1,4 @@
 export class UpdateTaskDto {
-  readonly name: string;
-  readonly description: string;
+  readonly title: string;
   readonly status: string;
 }

@@ -7,10 +7,7 @@ export type TaskDocument = HydratedDocument<Task>;
 @Schema()
 export class Task {
   @Prop({ required: true })
-  name: string;
-
-  @Prop()
-  description: string;
+  title: string;
 
   @Prop({ required: true })
   status: string;

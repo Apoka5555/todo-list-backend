@@ -9,9 +9,10 @@ import {
   Post,
   Put,
   Req,
-  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './schemas/task.schema';
@@ -19,7 +20,10 @@ import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private jwtService: JwtService,
+  ) {}
 
   @Get('/all')
   getAll(): Promise<Task[]> {
@@ -27,9 +31,16 @@ export class TasksController {
   }
 
   @Get('/byUserId')
-  @UseGuards(AuthGuard())
-  getUserTasks(@Req() request): Promise<Task[]> {
-    return this.tasksService.getAllByUserId(request.user);
+  async getUserTasks(@Req() request: Request): Promise<Task[]> {
+    const cookie = request.cookies['jwt'];
+
+    const user = await this.jwtService.verifyAsync(cookie);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.tasksService.getAllByUserId(user.id);
   }
 
   @Get(':id')
@@ -38,10 +49,20 @@ export class TasksController {
   }
 
   @Post()
-  @UseGuards(AuthGuard())
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createTaskDto: CreateTaskDto, @Req() request): Promise<Task> {
-    return this.tasksService.create(createTaskDto, request.user);
+  async create(
+    @Body() createTaskDto: CreateTaskDto,
+    @Req() request: Request,
+  ): Promise<Task> {
+    const cookie = request.cookies['jwt'];
+
+    const user = await this.jwtService.verifyAsync(cookie);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.tasksService.create(createTaskDto, user.id);
   }
 
   @Delete(':id')
