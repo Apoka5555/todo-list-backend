@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -47,6 +48,24 @@ export class TasksController {
     }
 
     return this.tasksService.getAllByUserId(user.id);
+  }
+
+  @ApiOperation({ summary: 'Get Tasks By Title Fragment' })
+  @ApiResponse({ status: 200, type: [Task] })
+  @Get('/byTitleFragment')
+  async getByTitleFragment(
+    @Query('title') title: string,
+    @Req() request: Request,
+  ): Promise<Task[]> {
+    const cookie = request.cookies['jwt'];
+
+    const user = await this.jwtService.verifyAsync(cookie);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.tasksService.getByTitleContains(title, user.id);
   }
 
   @ApiOperation({ summary: 'Get Task By ID' })

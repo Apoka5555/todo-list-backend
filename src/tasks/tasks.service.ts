@@ -13,12 +13,18 @@ export class TasksService {
     return this.taskModel.find().exec();
   }
 
-  async getAllByUserId(id: string): Promise<Task[]> {
-    return this.taskModel.find({ user: id });
+  async getAllByUserId(userId: string): Promise<Task[]> {
+    return this.taskModel.find({ user: userId });
   }
 
   async getById(id: string): Promise<Task> {
     return this.taskModel.findById(id);
+  }
+
+  async getByTitleContains(title: string, userId: string): Promise<Task[]> {
+    return this.taskModel
+      .find({ title: { $regex: title, $options: 'i' }, user: userId })
+      .exec();
   }
 
   async create(taskDto: CreateTaskDto, userId: string): Promise<Task> {
